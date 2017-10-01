@@ -3,7 +3,9 @@
 export function using(Reactish) {
   class Cell extends Reactish.Component {
     render() {
-      return <td>{this.props.text}</td>;
+      const { text, delay } = this.props;
+      wait(delay);
+      return <td>{text}</td>;
     }
   }
 
@@ -13,7 +15,8 @@ export function using(Reactish) {
       this.state = {
         elapsed: 0,
         size: 4,
-        period: 1000
+        period: 1000,
+        delay: 0
       };
       this.tick = this.tick.bind(this);
       this.tick();
@@ -25,10 +28,11 @@ export function using(Reactish) {
       }, this.state.period);
     }
     render() {
-      const { elapsed, size } = this.state;
+      const { elapsed, size, delay } = this.state;
+      const text = elapsed % 10;
       const array = Array(size).fill();
-      const row = array.map((x, i) => <Cell text={elapsed % 10} key={i} />);
-      const rows = array.map((x, i) => <tr key={i}>{row}</tr>);
+      const row = array.map((x, key) => <Cell {...{ key, text, delay }} />);
+      const rows = array.map((x, key) => <tr key={key}>{row}</tr>);
       return (
         <table>
           <tbody>{rows}</tbody>
@@ -38,4 +42,9 @@ export function using(Reactish) {
   }
 
   return Demo;
+}
+
+function wait(ms) {
+  const start = performance.now();
+  while (performance.now() - start < ms);
 }
