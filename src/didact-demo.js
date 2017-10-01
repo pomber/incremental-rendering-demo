@@ -11,11 +11,14 @@ const Demo = using({
 
 ReactDOM.render(
   [
-    <h3 key="1">This section is updated using React</h3>,
+    <h3 key="1">
+      This section is updated using{" "}
+      <a href="https://github.com/hexacta/didact">Didact Fiber</a>
+    </h3>,
     <Demo key="2" />,
     <footer key="3">
-      Now try it using <a href="react-fiber.html">React async rendering</a> or{" "}
-      <a href="react-fiber.html">Didact Fiber</a>
+      Now try it using <a href="react-sync.html">React sync rendering</a> or{" "}
+      <a href="react-async.html">React async rendering</a>
     </footer>
   ],
   document.getElementById("root")

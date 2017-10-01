@@ -11,11 +11,11 @@ const Demo = using({
 
 ReactDOM.render(
   [
-    <h3 key="1">This section is updated using React</h3>,
+    <h3 key="1">This section is updated using React (sync)</h3>,
     <Demo key="2" />,
     <footer key="3">
-      Now try it using <a href="react-fiber.html">React async rendering</a> or{" "}
-      <a href="react-fiber.html">Didact Fiber</a>
+      Now try it using <a href="react-async.html">React async rendering</a> or{" "}
+      <a href="didact.html">Didact Fiber</a>
     </footer>
   ],
   document.getElementById("root")
