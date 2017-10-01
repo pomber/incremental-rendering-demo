@@ -1,4 +1,4 @@
-(function(frames = 200, colWidth = "2px") {
+(function(frames = 150, colWidth = "2px") {
   const container = document.createElement("div");
   container.style.position = "fixed";
   container.style.right = "10px";

@@ -14,9 +14,9 @@ export function using(Reactish) {
       super(props);
       this.state = {
         elapsed: 0, // the number shown on each Cell
-        size: 4, // the size of a row
+        size: 6, // the size of a row
         period: 1000, // the time (in ms) between updates
-        delay: 1 // the delay (in ms) for the render of each Cell
+        delay: 3 // the delay (in ms) for the render of each Cell
       };
       this.changeDelay = this.changeDelay.bind(this);
       this.changePeriod = this.changePeriod.bind(this);
@@ -30,10 +30,10 @@ export function using(Reactish) {
       }, this.state.period);
     }
     changeDelay(e) {
-      this.setState({ delay: e.target.value });
+      this.setState({ delay: +e.target.value });
     }
     changePeriod(e) {
-      this.setState({ period: e.target.value });
+      this.setState({ period: +e.target.value });
     }
     render() {
       const { elapsed, size, delay, period } = this.state;
@@ -43,8 +43,8 @@ export function using(Reactish) {
       const rows = array.map((x, key) => <tr key={key}>{row}</tr>);
       return (
         <div>
-          <fieldset>
-            <label htmlFor="delay-range">Delay {delay} ms</label>
+          <fieldset style={{ display: "flex" }}>
+            <label htmlFor="delay-range">Delay {delay.toFixed(2)}ms</label>
             <input
               id="delay-range"
               type="range"
@@ -54,7 +54,7 @@ export function using(Reactish) {
               value={delay}
               onChange={this.changeDelay}
             />
-            <label htmlFor="period-range">Period {Math.round(period)} ms</label>
+            <label htmlFor="period-range">Period {Math.round(period)}ms</label>
             <input
               id="period-range"
               type="range"
