@@ -1,15 +1,16 @@
-import React from "react";
-import ReactDOM from "react-dom";
+import didact from "./didact/didact";
 import { using } from "./demo";
 import "./bleeding-thread";
 
+/** @jsx didact.createElement */
+
 const Demo = using({
-  createElement: React.createElement,
-  Component: React.Component,
-  render: ReactDOM.render
+  createElement: didact.createElement,
+  Component: didact.Component,
+  render: didact.render
 });
 
-ReactDOM.render(
+didact.render(
   [
     <h3 key="1">
       This section is updated using{" "}
