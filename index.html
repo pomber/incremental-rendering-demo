@@ -9,12 +9,12 @@
 	<style>
 		body {
 			background: #fafafa;
-			color: #bababa;
 			margin: 0;
+			font-family: "Roboto", "Oxygen", "Ubuntu", "Droid Sans", "Helvetica Neue", sans-serif;
 		}
 
 		p {
-			margin: 0 5px;
+			margin: 2px 5px;
 		}
 
 		#container {
@@ -24,11 +24,13 @@
 			justify-content: flex-start;
 			align-items: center;
 			background: #080e24;
+			color: #ccc;
 		}
 
-		#root {
+		#root>div {
 			display: flex;
 			flex-flow: row;
+			justify-content: space-around;
 		}
 
 		#animation {
@@ -44,14 +46,22 @@
 			background: #fafafa;
 			color: #222;
 		}
+
+		section.animation a {
+			color: #ccc;
+		}
+
+		footer {
+			padding: 10px 1px;
+		}
 	</style>
 	<link rel="stylesheet" href="solar-system.css"></link>
 </head>
 
 <body>
 	<div id="container">
-		<section>
-			<h3>This is a pure CSS animation</h3>
+		<section class="animation">
+			<h3>This is a pure <a href="https://codepen.io/yashbhardwaj/pen/yFIiJ">CSS animation</a></h3>
 			<p>To keep the planets spinning, the main thread needs to be free for some microseconds every 16ms or so.</p>
 		</section>
 		<div id="animation">
@@ -66,10 +76,7 @@
 				<li class="jupiter"><span>Jupiter</span></li>
 			</ul>
 		</div>
-		<section class="managed">
-			<h3>This section is updated using React</h3>
-			<div id="root"></div>
-			<p>Now try it using <a href="react-fiber.html">React async rendering</a> or <a href="react-fiber.html">Didact Fiber</a></p>
+		<section class="managed" id="root">
 		</section>
 	</div>
 
