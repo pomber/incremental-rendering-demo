@@ -42,19 +42,14 @@ export function using(Reactish) {
       const row = array.map((x, key) => <Cell {...{ key, text, delay }} />);
       const rows = array.map((x, key) => <tr key={key}>{row}</tr>);
       return (
-        <div>
-          <fieldset style={{ display: "flex" }}>
-            <label htmlFor="delay-range">Delay {delay.toFixed(2)}ms</label>
-            <input
-              id="delay-range"
-              type="range"
-              min="0"
-              max="10"
-              step="any"
-              value={delay}
-              onChange={this.changeDelay}
-            />
-            <label htmlFor="period-range">Period {Math.round(period)}ms</label>
+        <div style={{ display: "flex" }}>
+          <table>
+            <tbody>{rows}</tbody>
+          </table>
+          <div>
+            <p>
+              The table refreshes every <b>{Math.round(period)}</b>ms
+            </p>
             <input
               id="period-range"
               type="range"
@@ -64,10 +59,23 @@ export function using(Reactish) {
               value={period}
               onChange={this.changePeriod}
             />
-          </fieldset>
-          <table>
-            <tbody>{rows}</tbody>
-          </table>
+            <p>
+              The render of each cell takes <b>{delay.toFixed(2)}</b>ms
+            </p>
+            <input
+              id="delay-range"
+              type="range"
+              min="0"
+              max="10"
+              step="any"
+              value={delay}
+              onChange={this.changeDelay}
+            />
+            <p>
+              So, rendering the full table keeps the main thread busy for{" "}
+              <b>{(delay * size * size).toFixed(2)}</b>ms
+            </p>
+          </div>
         </div>
       );
     }

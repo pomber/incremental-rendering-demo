@@ -8,227 +8,52 @@
 	<title>Incremental Rendering - React</title>
 	<style>
 		body {
-
-			background: #080e24;
+			background: #fafafa;
 			color: #bababa;
 			margin: 0;
 		}
 
+		p {
+			margin: 0 5px;
+		}
+
 		#container {
 			display: flex;
-			transform: translateY(-50%) translateY(50vh);
 			overflow: hidden;
 			flex-flow: column;
+			justify-content: flex-start;
+			align-items: center;
+			background: #080e24;
 		}
 
 		#root {
-			width: 200px;
-			height: 300px;
+			display: flex;
+			flex-flow: row;
 		}
 
 		#animation {
-			height: 400px;
+			height: 380px;
 			transform: translate(50%, 50%);
 		}
 
-		ul.solarsystem {
-			position: relative;
-			height: 400px;
-			list-style: none;
-			transition: all 0.09s ease-in;
-			transform: translate(-480px, -336px);
+		section {
+			width: 100%;
 		}
 
-		ul.solarsystem li {
-			text-indent: -9999px;
-			display: block;
-			position: absolute;
-			border: 2px solid #394057;
-		}
-
-		ul.solarsystem li span {
-			display: block;
-			position: absolute;
-			width: 10px;
-			height: 10px;
-			border-radius: 5px;
-		}
-
-		ul.solarsystem li.active.sun span,
-		ul.solarsystem li.active.earth .moon {
-			border: none;
-			box-shadow: none;
-		}
-
-		ul.solarsystem li.sun {
-			width: 40px;
-			height: 40px;
-			border-radius: 20px;
-			background: #fc3;
-			background-image: gradient( linear,
-			left bottom,
-			left top,
-			color-stop(0.22, rgb(204, 153, 0)),
-			color-stop(1, rgb(255, 219, 112)));
-			top: 302px;
-			left: 462px;
-			border: none;
-			box-shadow: 0 0 50px #c90;
-			z-index: 100;
-			transition: all 0.2s ease-in;
-		}
-
-		ul.solarsystem li.sun span {
-			width: 60px;
-			height: 60px;
-			border-radius: 50%;
-		}
-
-		ul.solarsystem li.mercury {
-			width: 100px;
-			height: 100px;
-			border-radius: 52px;
-			top: 270px;
-			left: 430px;
-			z-index: 99;
-		}
-
-		ul.solarsystem li.mercury span {
-			background: #b6bac5;
-			top: 10px;
-			left: 10px;
-		}
-
-		ul.solarsystem li.venus {
-			width: 160px;
-			height: 160px;
-			border-radius: 82px;
-			top: 240px;
-			left: 400px;
-			z-index: 98;
-		}
-
-		ul.solarsystem li.venus span {
-			background: #bf8639;
-			top: 118px;
-			left: 5px;
-		}
-
-		ul.solarsystem li.earth {
-			width: 220px;
-			height: 220px;
-			border-radius: 112px;
-			top: 210px;
-			left: 370px;
-			z-index: 97;
-		}
-
-		ul.solarsystem li.earth span {
-			background: #06c;
-			top: 56px;
-			left: 5px;
-		}
-
-		ul.solarsystem li.earth span.moon {
-			width: 4px;
-			height: 4px;
-			border-radius: 2px;
-			background: #ccc;
-			top: 12px;
-			left: 12px;
-		}
-
-		ul.solarsystem li.mars {
-			width: 280px;
-			height: 280px;
-			border-radius: 142px;
-			top: 180px;
-			left: 340px;
-			z-index: 96;
-		}
-
-		ul.solarsystem li.mars span {
-			background: #aa4200;
-			top: 0px;
-			left: 175px;
-		}
-
-		ul.solarsystem li.asteroids_meteorids {
-			top: 155px;
-			left: 315px;
-			z-index: 1;
-			background: url(http://neography.com/experiment/circles/solarsystem/asteroids_meteorids.png) no-repeat 0 0;
-			width: 330px;
-			height: 330px;
-			border-radius: 165px;
-			border: none;
-		}
-
-		ul.solarsystem li.jupiter {
-			width: 340px;
-			height: 340px;
-			border-radius: 172px;
-			top: 150px;
-			left: 310px;
-			z-index: 95;
-		}
-
-		ul.solarsystem li.jupiter span {
-			background: #e0ae6f;
-			top: 67px;
-			left: 24px;
-		}
-		/* CSS3 Animations */
-
-		ul.solarsystem li,
-		ul.solarsystem li.earth span {
-			animation-iteration-count: infinite;
-			animation-timing-function: linear;
-			animation-name: orbit;
-		}
-
-		ul.solarsystem li.mercury {
-			animation-duration: 5s;
-		}
-
-		ul.solarsystem li.venus {
-			animation-duration: 8s;
-		}
-
-		ul.solarsystem li.earth {
-			animation-duration: 12s;
-		}
-
-		ul.solarsystem li.earth span {
-			animation-duration: 2s;
-		}
-
-		ul.solarsystem li.mars {
-			animation-duration: 20s;
-		}
-
-		ul.solarsystem li.asteroids_meteorids {
-			animation-duration: 50s;
-		}
-
-		ul.solarsystem li.jupiter {
-			animation-duration: 30s;
-		}
-
-		@keyframes orbit {
-			from {
-				transform: rotate(0deg);
-				color: white;
-			}
-			to {
-				transform: rotate(360deg)
-			}
+		section.managed {
+			background: #fafafa;
+			color: #222;
 		}
 	</style>
+	<link rel="stylesheet" href="solar-system.css"></link>
 </head>
 
 <body>
 	<div id="container">
+		<section>
+			<h3>This is a pure CSS animation</h3>
+			<p>To keep the planets spinning, the main thread needs to be free for some microseconds every 16ms or so.</p>
+		</section>
 		<div id="animation">
 			<ul class="solarsystem">
 				<li class="sun"><span>Sun</span></li>
@@ -241,7 +66,11 @@
 				<li class="jupiter"><span>Jupiter</span></li>
 			</ul>
 		</div>
-		<div id="root"></div>
+		<section class="managed">
+			<h3>This section is updated using React</h3>
+			<div id="root"></div>
+			<p>Now try it using <a href="react-fiber.html">React async rendering</a> or <a href="react-fiber.html">Didact Fiber</a></p>
+		</section>
 	</div>
 
 	<script src="bundle.js"></script>
