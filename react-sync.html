@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta http-equiv="X-UA-Compatible" content="ie=edge">
+	<title>
+		Incremental Rendering - React Sync
+	</title>
+	<style>
+		body {
+			background: #fafafa;
+			margin: 0;
+			font-family: "Roboto", "Oxygen", "Ubuntu", "Droid Sans", "Helvetica Neue", sans-serif;
+		}
+
+		p {
+			margin: 2px 5px;
+		}
+
+		#container {
+			display: flex;
+			overflow: hidden;
+			flex-flow: column;
+			justify-content: flex-start;
+			align-items: center;
+			background: #080e24;
+			color: #ccc;
+		}
+
+		#root>div {
+			display: flex;
+			flex-flow: row;
+			justify-content: space-around;
+		}
+
+		#animation {
+			height: 380px;
+			transform: translate(50%, 50%);
+		}
+
+		section {
+			width: 100%;
+		}
+
+		section.managed {
+			background: #fafafa;
+			color: #222;
+		}
+
+		section.animation a {
+			color: #ccc;
+		}
+
+		footer {
+			padding: 10px 1px;
+			text-align: center;
+		}
+	</style>
+	<link rel="stylesheet" href="solar-system.css"></link>
+</head>
+
+<body>
+	<div id="container">
+		<section class="animation">
+			<h3>This is a pure <a href="https://codepen.io/yashbhardwaj/pen/yFIiJ">CSS animation</a></h3>
+			<p>To keep the planets spinning, the main thread needs to be free for some microseconds every 16ms or so.</p>
+		</section>
+		<div id="animation">
+			<ul class="solarsystem">
+				<li class="sun"><span>Sun</span></li>
+				<li class="mercury"><span>Mercury</span></li>
+				<li class="venus"><span>Venus</span></li>
+				<li class="earth"><span>Earth<span class="moon">Moon</span></span>
+				</li>
+				<li class="mars"><span>Mars</span></li>
+				<li class="asteroids_meteorids"><span>Asteroids</span></li>
+				<li class="jupiter"><span>Jupiter</span></li>
+			</ul>
+		</div>
+		<section class="managed" id="root">
+		</section>
+	</div>
+<script type="text/javascript" src="react-sync.bundle.js?661af0b092319ded8afe"></script></body>
+
+</html>
