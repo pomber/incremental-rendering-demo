@@ -13,11 +13,13 @@ export function using(Reactish) {
     constructor(props) {
       super(props);
       this.state = {
-        elapsed: 0,
-        size: 4,
-        period: 1000,
-        delay: 0
+        elapsed: 0, // the number shown on each Cell
+        size: 4, // the size of a row
+        period: 1000, // the time (in ms) between updates
+        delay: 1 // the delay (in ms) for the render of each Cell
       };
+      this.changeDelay = this.changeDelay.bind(this);
+      this.changePeriod = this.changePeriod.bind(this);
       this.tick = this.tick.bind(this);
       this.tick();
     }
@@ -27,16 +29,46 @@ export function using(Reactish) {
         this.tick();
       }, this.state.period);
     }
+    changeDelay(e) {
+      this.setState({ delay: e.target.value });
+    }
+    changePeriod(e) {
+      this.setState({ period: e.target.value });
+    }
     render() {
-      const { elapsed, size, delay } = this.state;
+      const { elapsed, size, delay, period } = this.state;
       const text = elapsed % 10;
       const array = Array(size).fill();
       const row = array.map((x, key) => <Cell {...{ key, text, delay }} />);
       const rows = array.map((x, key) => <tr key={key}>{row}</tr>);
       return (
-        <table>
-          <tbody>{rows}</tbody>
-        </table>
+        <div>
+          <fieldset>
+            <label htmlFor="delay-range">Delay {delay} ms</label>
+            <input
+              id="delay-range"
+              type="range"
+              min="0"
+              max="10"
+              step="any"
+              value={delay}
+              onChange={this.changeDelay}
+            />
+            <label htmlFor="period-range">Period {Math.round(period)} ms</label>
+            <input
+              id="period-range"
+              type="range"
+              min="200"
+              max="1000"
+              step="any"
+              value={period}
+              onChange={this.changePeriod}
+            />
+          </fieldset>
+          <table>
+            <tbody>{rows}</tbody>
+          </table>
+        </div>
       );
     }
   }
