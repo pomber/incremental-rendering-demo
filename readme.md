@@ -8,3 +8,4 @@ Note:
 - The animation should work without the main thread (it only needs to animate `transform`), but I changed it to animate other properties to depend on it
 - Didact only works on browser that have requestIdleCallback, like Chrome
 - On iPad (Safari and Chrome) the animation looks good no matter what React is doing
+- Didact code is awful, I'm going to refactor it and put it on didact repo
