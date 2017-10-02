@@ -189,8 +189,11 @@ ul.solarsystem li.jupiter {
   from {
     transform: rotate(0deg);
     color: white;
+    font-size: 200%;
   }
   to {
     transform: rotate(360deg);
+    color: black;
+    font-size: 50%;
   }
 }
