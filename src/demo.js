@@ -72,8 +72,8 @@ export function using(Reactish) {
               onChange={this.changeDelay}
             />
             <p>
-              So, rendering the full table keeps the main thread busy for{" "}
-              <b>{(delay * size * size).toFixed(2)}</b>ms
+              So, sync rendering the full table will keep the main thread busy
+              for <b>{(delay * size * size).toFixed(2)}</b>ms
             </p>
           </div>
         </div>
