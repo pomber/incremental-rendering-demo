@@ -77,7 +77,7 @@ function resetNextUnitOfWork() {
 
   nextUnitOfWork = {
     tag: HOST_ROOT,
-    stateNode: root.stateNode,
+    stateNode: update.dom || root.stateNode,
     props: update.newProps || root.props,
     alternate: root
   };
@@ -109,39 +109,42 @@ function performUnitOfWork(fiber) {
   }
 }
 
-function beginWork(parentFiber) {
-  let elements = [];
-  if (parentFiber.tag == CLASS_COMPONENT) {
-    if (parentFiber.stateNode == null) {
-      parentFiber.stateNode = createInstance(parentFiber);
-      elements = parentFiber.stateNode.render();
-    } else {
-      const instance = parentFiber.stateNode;
-      const shouldUpdate =
-        parentFiber.props != instance.props || parentFiber.partialState;
-      if (shouldUpdate) {
-        instance.props = parentFiber.props;
-        instance.state = Object.assign(
-          {},
-          instance.state,
-          parentFiber.partialState
-        );
-        elements = parentFiber.stateNode.render();
-        parentFiber.partialState = null;
-      } else {
-        // No need to render, reuse children from last time
-        cloneChildFibers(parentFiber);
-        return;
-      }
-    }
+function beginWork(wipFiber) {
+  if (wipFiber.tag == CLASS_COMPONENT) {
+    updateClassComponent(wipFiber);
   } else {
-    elements = parentFiber.props.children;
+    updateHostComponent(wipFiber);
   }
-  elements = arrify(elements);
+}
 
-  //reconcileChildrenArray
+function updateHostComponent(wipFiber) {
+  const newChildElements = wipFiber.props.children;
+  reconcileChildrenArray(wipFiber, newChildElements);
+}
+
+function updateClassComponent(wipFiber) {
+  let instance = wipFiber.stateNode;
+  if (instance == null) {
+    instance = wipFiber.stateNode = createInstance(wipFiber);
+  } else if (wipFiber.props == instance.props && !wipFiber.partialState) {
+    // No need to render, clone children from last time
+    cloneChildFibers(wipFiber);
+    return;
+  }
+
+  instance.props = wipFiber.props;
+  instance.state = Object.assign({}, instance.state, wipFiber.partialState);
+  wipFiber.partialState = null;
+
+  const newChildElements = wipFiber.stateNode.render();
+  reconcileChildrenArray(wipFiber, newChildElements);
+}
+
+function reconcileChildrenArray(wipFiber, newChildElements) {
+  const elements = arrify(newChildElements);
+
   let index = 0;
-  let oldFiber = parentFiber.alternate ? parentFiber.alternate.child : null;
+  let oldFiber = wipFiber.alternate ? wipFiber.alternate.child : null;
   let newFiber = null;
   while (index < elements.length || oldFiber != null) {
     if (
@@ -156,12 +159,12 @@ function beginWork(parentFiber) {
         tag: oldFiber.tag,
         stateNode: oldFiber.stateNode,
         props: element.props,
-        parent: parentFiber,
+        parent: wipFiber,
         alternate: oldFiber,
         partialState: oldFiber.partialState
       };
       if (index == 0) {
-        parentFiber.child = newFiber;
+        wipFiber.child = newFiber;
       } else {
         prevFiber.sibling = newFiber;
       }
@@ -178,10 +181,10 @@ function beginWork(parentFiber) {
         tag:
           typeof element.type === "string" ? HOST_COMPONENT : CLASS_COMPONENT,
         props: element.props,
-        parent: parentFiber
+        parent: wipFiber
       };
       if (index == 0) {
-        parentFiber.child = newFiber;
+        wipFiber.child = newFiber;
       } else {
         prevFiber.sibling = newFiber;
       }
@@ -190,8 +193,8 @@ function beginWork(parentFiber) {
 
     if (oldFiber != null) {
       oldFiber.effect = DELETION;
-      parentFiber.effects = parentFiber.effects || [];
-      parentFiber.effects.push(oldFiber);
+      wipFiber.effects = wipFiber.effects || [];
+      wipFiber.effects.push(oldFiber);
       oldFiber = oldFiber.sibling;
     }
   }
