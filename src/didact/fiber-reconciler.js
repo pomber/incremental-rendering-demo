@@ -2,18 +2,19 @@ import { updateDomProperties } from "./dom-utils";
 import { TEXT_ELEMENT } from "./element";
 import { createInstance } from "./component";
 
-// effects
-const PLACEMENT = 1;
-const DELETION = 2;
-const UPDATE = 3;
-
-// kinds
+// Fiber tags
 const HOST_COMPONENT = "host";
 const CLASS_COMPONENT = "class";
 const HOST_ROOT = "root";
 
+// Effect tags
+const PLACEMENT = 1;
+const DELETION = 2;
+const UPDATE = 3;
+
 const ENOUGH_TIME = 1;
 
+// Global state:
 const updateQueue = [];
 let nextUnitOfWork = null;
 let pendingCommit = null;
@@ -64,6 +65,7 @@ function resetNextUnitOfWork() {
     return;
   }
 
+  // Copy the setState parameter from the update payload to the corresponding fiber
   if (update.partialState) {
     update.fiber.partialState = update.partialState;
   }
@@ -74,9 +76,9 @@ function resetNextUnitOfWork() {
       : getRoot(update.fiber);
 
   nextUnitOfWork = {
-    kind: HOST_ROOT,
+    tag: HOST_ROOT,
     stateNode: root.stateNode,
-    pendingProps: update.newProps || root.pendingProps,
+    props: update.newProps || root.props,
     alternate: root
   };
 }
@@ -109,21 +111,21 @@ function performUnitOfWork(fiber) {
 
 function beginWork(parentFiber) {
   let elements = [];
-  if (parentFiber.kind == CLASS_COMPONENT) {
+  if (parentFiber.tag == CLASS_COMPONENT) {
     if (parentFiber.stateNode == null) {
       parentFiber.stateNode = createInstance(parentFiber);
       elements = parentFiber.stateNode.render();
     } else {
       const instance = parentFiber.stateNode;
       const shouldUpdate =
-        parentFiber.pendingProps != instance.props || parentFiber.partialState;
+        parentFiber.props != instance.props || parentFiber.partialState;
       if (shouldUpdate) {
-        instance.props = parentFiber.pendingProps;
-        const partialState = getStateFromUpdate(
-          instance,
+        instance.props = parentFiber.props;
+        instance.state = Object.assign(
+          {},
+          instance.state,
           parentFiber.partialState
         );
-        instance.state = Object.assign({}, instance.state, partialState);
         elements = parentFiber.stateNode.render();
         parentFiber.partialState = null;
       } else {
@@ -133,7 +135,7 @@ function beginWork(parentFiber) {
       }
     }
   } else {
-    elements = parentFiber.pendingProps.children;
+    elements = parentFiber.props.children;
   }
   elements = arrify(elements);
 
@@ -151,9 +153,9 @@ function beginWork(parentFiber) {
       const prevFiber = newFiber;
       newFiber = {
         type: element.type,
-        kind: oldFiber.kind,
+        tag: oldFiber.tag,
         stateNode: oldFiber.stateNode,
-        pendingProps: element.props,
+        props: element.props,
         parent: parentFiber,
         alternate: oldFiber,
         partialState: oldFiber.partialState
@@ -173,9 +175,9 @@ function beginWork(parentFiber) {
       const prevFiber = newFiber;
       newFiber = {
         type: element.type,
-        kind:
+        tag:
           typeof element.type === "string" ? HOST_COMPONENT : CLASS_COMPONENT,
-        pendingProps: element.props,
+        props: element.props,
         parent: parentFiber
       };
       if (index == 0) {
@@ -206,9 +208,9 @@ function cloneChildFibers(parentFiber) {
   while (oldChild != null) {
     const newChild = {
       type: oldChild.type,
-      kind: oldChild.kind,
+      tag: oldChild.tag,
       stateNode: oldChild.stateNode,
-      pendingProps: oldChild.pendingProps,
+      props: oldChild.props,
       partialState: oldChild.partialState,
       alternate: oldChild,
       parent: parentFiber
@@ -224,7 +226,7 @@ function cloneChildFibers(parentFiber) {
 }
 
 function completeWork(fiber) {
-  switch (fiber.kind) {
+  switch (fiber.tag) {
     case HOST_COMPONENT:
       if (fiber.alternate) {
         fiber.effect = UPDATE;
@@ -234,7 +236,7 @@ function completeWork(fiber) {
         const dom = isTextElement
           ? document.createTextNode("")
           : document.createElement(fiber.type);
-        updateDomProperties(dom, [], fiber.pendingProps);
+        updateDomProperties(dom, [], fiber.props);
         fiber.stateNode = dom;
       }
       break;
@@ -262,9 +264,9 @@ function commitAllWork(fiber) {
 }
 
 function commitWork(fiber) {
-  if (fiber.kind != HOST_ROOT) {
+  if (fiber.tag != HOST_ROOT) {
     let domParentFiber = fiber.parent;
-    while (domParentFiber.kind == CLASS_COMPONENT) {
+    while (domParentFiber.tag == CLASS_COMPONENT) {
       domParentFiber = domParentFiber.parent;
     }
     switch (fiber.effect) {
@@ -272,12 +274,12 @@ function commitWork(fiber) {
         // console.log("update", fiber.stateNode);
         updateDomProperties(
           fiber.stateNode,
-          fiber.alternate.pendingProps,
-          fiber.pendingProps
+          fiber.alternate.props,
+          fiber.props
         );
         break;
       case PLACEMENT:
-        if (fiber.kind == HOST_COMPONENT) {
+        if (fiber.tag == HOST_COMPONENT) {
           domParentFiber.stateNode.appendChild(fiber.stateNode);
         }
         // console.log("place", fiber.stateNode);
@@ -286,7 +288,7 @@ function commitWork(fiber) {
         // console.log("delete", fiber.stateNode);
         let node = fiber;
         while (true) {
-          if (node.kind == CLASS_COMPONENT) {
+          if (node.tag == CLASS_COMPONENT) {
             node = node.child;
             continue;
           }
@@ -305,18 +307,6 @@ function commitWork(fiber) {
         }
         break;
     }
-  }
-}
-
-function getStateFromUpdate(instance, partialState) {
-  if (partialState == null) {
-    return {};
-  }
-  if (typeof partialState === "function") {
-    const updateFn = partialState;
-    return updateFn.call(instance, instance.state);
-  } else {
-    return partialState;
   }
 }
 
