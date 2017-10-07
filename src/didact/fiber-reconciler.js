@@ -2,6 +2,7 @@ import { updateDomProperties } from "./dom-utils";
 import { TEXT_ELEMENT } from "./element";
 import { createInstance } from "./component";
 
+// effects
 const PLACEMENT = 1;
 const DELETION = 2;
 const UPDATE = 3;
@@ -11,26 +12,24 @@ const HOST_COMPONENT = "host";
 const CLASS_COMPONENT = "class";
 const HOST_ROOT = "root";
 
-const timeHeuristicForUnitOfWork = 1;
+const ENOUGH_TIME = 1;
 
+const updateQueue = [];
 let nextUnitOfWork = null;
-let updateQueue = [];
 let pendingCommit = null;
 
 export function render(elements, containerDom) {
-  // console.log("Queue render", updateQueue.length);
   updateQueue.push({
-    kind: HOST_ROOT,
-    stateNode: containerDom,
-    pendingProps: { children: arrify(elements) }
+    from: HOST_ROOT,
+    dom: containerDom,
+    newProps: { children: arrify(elements) }
   });
   requestIdleCallback(performWork);
 }
 
 export function scheduleUpdate(fiber, partialState) {
-  // console.log("Queue update", updateQueue.length);
   updateQueue.push({
-    kind: CLASS_COMPONENT,
+    from: CLASS_COMPONENT,
     fiber: fiber,
     partialState: partialState
   });
@@ -45,14 +44,11 @@ function performWork(deadline) {
 }
 
 function workLoop(deadline) {
-  if (nextUnitOfWork == null) {
+  if (!nextUnitOfWork) {
     resetNextUnitOfWork();
   }
 
-  while (
-    nextUnitOfWork != null &&
-    deadline.timeRemaining() > timeHeuristicForUnitOfWork
-  ) {
+  while (nextUnitOfWork != null && deadline.timeRemaining() > ENOUGH_TIME) {
     nextUnitOfWork = performUnitOfWork(nextUnitOfWork);
   }
 
@@ -62,45 +58,52 @@ function workLoop(deadline) {
 }
 
 function resetNextUnitOfWork() {
-  if (!nextUnitOfWork && updateQueue.length) {
-    const update = updateQueue.shift();
-    if (update.kind === HOST_ROOT) {
-      nextUnitOfWork = {
-        stateNode: update.stateNode,
-        kind: HOST_ROOT,
-        pendingProps: update.pendingProps,
-        alternate: update.stateNode._rootContainerFiber
-      };
-    } else {
-      let node = update.fiber;
-      update.fiber.partialState = update.partialState;
-      while (node.parent != null) {
-        node = node.parent;
-      }
-      nextUnitOfWork = {
-        stateNode: node.stateNode,
-        kind: HOST_ROOT,
-        pendingProps: node.pendingProps,
-        alternate: node
-      };
-    }
+  const update = updateQueue.shift();
+
+  if (!update) {
+    return;
   }
+
+  if (update.partialState) {
+    update.fiber.partialState = update.partialState;
+  }
+
+  const root =
+    update.from == HOST_ROOT
+      ? update.dom._rootContainerFiber
+      : getRoot(update.fiber);
+
+  nextUnitOfWork = {
+    kind: HOST_ROOT,
+    stateNode: root.stateNode,
+    pendingProps: update.newProps || root.pendingProps,
+    alternate: root
+  };
+}
+
+function getRoot(fiber) {
+  let node = fiber;
+  while (node.parent != null) {
+    node = node.parent;
+  }
+  return node;
 }
 
 function performUnitOfWork(fiber) {
   beginWork(fiber);
   if (fiber.child != null) {
     return fiber.child;
-  } else {
-    let uow = fiber;
-    while (uow != null) {
-      completeWork(uow);
-      if (uow.sibling) {
-        return uow.sibling;
-      } else {
-        uow = uow.parent;
-      }
+  }
+
+  // No child, we call completeWork until we find a sibling
+  let uow = fiber;
+  while (uow != null) {
+    completeWork(uow);
+    if (uow.sibling) {
+      // Sibling needs to beginWork
+      return uow.sibling;
     }
+    uow = uow.parent;
   }
 }
 
@@ -318,9 +321,5 @@ function getStateFromUpdate(instance, partialState) {
 }
 
 function arrify(val) {
-  if (val === null || val === undefined) {
-    return [];
-  }
-
-  return Array.isArray(val) ? val : [val];
+  return val == null ? [] : Array.isArray(val) ? val : [val];
 }
