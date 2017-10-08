@@ -28,10 +28,10 @@ export function render(elements, containerDom) {
   requestIdleCallback(performWork);
 }
 
-export function scheduleUpdate(fiber, partialState) {
+export function scheduleUpdate(instance, partialState) {
   updateQueue.push({
     from: CLASS_COMPONENT,
-    fiber: fiber,
+    instance: instance,
     partialState: partialState
   });
   requestIdleCallback(performWork);
@@ -60,7 +60,6 @@ function workLoop(deadline) {
 
 function resetNextUnitOfWork() {
   const update = updateQueue.shift();
-
   if (!update) {
     return;
   }
@@ -73,7 +72,7 @@ function resetNextUnitOfWork() {
   const root =
     update.from == HOST_ROOT
       ? update.dom._rootContainerFiber
-      : getRoot(update.fiber);
+      : getRoot(update.instance.__fiber);
 
   nextUnitOfWork = {
     tag: HOST_ROOT,
@@ -118,6 +117,16 @@ function beginWork(wipFiber) {
 }
 
 function updateHostComponent(wipFiber) {
+  let dom = wipFiber.stateNode;
+  if (!dom) {
+    const isTextElement = wipFiber.type === TEXT_ELEMENT;
+    dom = isTextElement
+      ? document.createTextNode("")
+      : document.createElement(wipFiber.type);
+    updateDomProperties(dom, [], wipFiber.props);
+    wipFiber.stateNode = dom;
+  }
+
   const newChildElements = wipFiber.props.children;
   reconcileChildrenArray(wipFiber, newChildElements);
 }
@@ -147,56 +156,51 @@ function reconcileChildrenArray(wipFiber, newChildElements) {
   let oldFiber = wipFiber.alternate ? wipFiber.alternate.child : null;
   let newFiber = null;
   while (index < elements.length || oldFiber != null) {
-    if (
-      index < elements.length &&
-      oldFiber != null &&
-      elements[index].type == oldFiber.type
-    ) {
-      const element = elements[index];
-      const prevFiber = newFiber;
+    const prevFiber = newFiber;
+    const element = index < elements.length && elements[index];
+    const sameType = oldFiber && element && element.type == oldFiber.type;
+
+    if (sameType) {
       newFiber = {
-        type: element.type,
+        type: oldFiber.type,
         tag: oldFiber.tag,
         stateNode: oldFiber.stateNode,
         props: element.props,
         parent: wipFiber,
         alternate: oldFiber,
-        partialState: oldFiber.partialState
+        partialState: oldFiber.partialState,
+        effect: UPDATE
       };
-      if (index == 0) {
-        wipFiber.child = newFiber;
-      } else {
-        prevFiber.sibling = newFiber;
-      }
-      index++;
-      oldFiber = oldFiber.sibling;
-      continue;
     }
 
-    if (index < elements.length) {
-      const element = elements[index];
-      const prevFiber = newFiber;
+    if (element && !sameType) {
       newFiber = {
         type: element.type,
         tag:
           typeof element.type === "string" ? HOST_COMPONENT : CLASS_COMPONENT,
         props: element.props,
-        parent: wipFiber
+        parent: wipFiber,
+        effect: PLACEMENT
       };
-      if (index == 0) {
-        wipFiber.child = newFiber;
-      } else {
-        prevFiber.sibling = newFiber;
-      }
-      index++;
     }
 
-    if (oldFiber != null) {
+    if (oldFiber && !sameType) {
       oldFiber.effect = DELETION;
       wipFiber.effects = wipFiber.effects || [];
       wipFiber.effects.push(oldFiber);
+    }
+
+    if (oldFiber) {
       oldFiber = oldFiber.sibling;
     }
+
+    if (index == 0) {
+      wipFiber.child = newFiber;
+    } else if (prevFiber) {
+      prevFiber.sibling = newFiber;
+    }
+
+    index++;
   }
 }
 
@@ -218,10 +222,10 @@ function cloneChildFibers(parentFiber) {
       alternate: oldChild,
       parent: parentFiber
     };
-    if (!prevChild) {
-      parentFiber.child = newChild;
-    } else {
+    if (prevChild) {
       prevChild.sibling = newChild;
+    } else {
+      parentFiber.child = newChild;
     }
     prevChild = newChild;
     oldChild = oldChild.sibling;
@@ -229,24 +233,10 @@ function cloneChildFibers(parentFiber) {
 }
 
 function completeWork(fiber) {
-  switch (fiber.tag) {
-    case HOST_COMPONENT:
-      if (fiber.alternate) {
-        fiber.effect = UPDATE;
-      } else {
-        fiber.effect = PLACEMENT;
-        const isTextElement = fiber.type === TEXT_ELEMENT;
-        const dom = isTextElement
-          ? document.createTextNode("")
-          : document.createElement(fiber.type);
-        updateDomProperties(dom, [], fiber.props);
-        fiber.stateNode = dom;
-      }
-      break;
-    case CLASS_COMPONENT:
-      fiber.stateNode.__fiber = fiber;
-      break;
+  if (fiber.tag == CLASS_COMPONENT) {
+    fiber.stateNode.__fiber = fiber;
   }
+
   if (fiber.parent) {
     const childEffects = fiber.effects || [];
     const thisEffect = fiber.effect != null ? [fiber] : [];
@@ -273,22 +263,19 @@ function commitWork(fiber) {
       domParentFiber = domParentFiber.parent;
     }
     switch (fiber.effect) {
+      case PLACEMENT:
+        if (fiber.tag == HOST_COMPONENT) {
+          domParentFiber.stateNode.appendChild(fiber.stateNode);
+        }
+        break;
       case UPDATE:
-        // console.log("update", fiber.stateNode);
         updateDomProperties(
           fiber.stateNode,
           fiber.alternate.props,
           fiber.props
         );
         break;
-      case PLACEMENT:
-        if (fiber.tag == HOST_COMPONENT) {
-          domParentFiber.stateNode.appendChild(fiber.stateNode);
-        }
-        // console.log("place", fiber.stateNode);
-        break;
       case DELETION:
-        // console.log("delete", fiber.stateNode);
         let node = fiber;
         while (true) {
           if (node.tag == CLASS_COMPONENT) {

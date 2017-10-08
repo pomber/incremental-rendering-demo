@@ -7,7 +7,7 @@ export class Component {
   }
 
   setState(partialState) {
-    scheduleUpdate(this.__fiber, partialState);
+    scheduleUpdate(this, partialState);
   }
 }
 
