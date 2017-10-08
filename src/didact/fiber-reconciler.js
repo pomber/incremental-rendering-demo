@@ -14,7 +14,7 @@ const UPDATE = 3;
 
 const ENOUGH_TIME = 1;
 
-// Global state:
+// Global state
 const updateQueue = [];
 let nextUnitOfWork = null;
 let pendingCommit = null;
@@ -169,7 +169,7 @@ function reconcileChildrenArray(wipFiber, newChildElements) {
         parent: wipFiber,
         alternate: oldFiber,
         partialState: oldFiber.partialState,
-        effect: UPDATE
+        effectTag: UPDATE
       };
     }
 
@@ -180,12 +180,12 @@ function reconcileChildrenArray(wipFiber, newChildElements) {
           typeof element.type === "string" ? HOST_COMPONENT : CLASS_COMPONENT,
         props: element.props,
         parent: wipFiber,
-        effect: PLACEMENT
+        effectTag: PLACEMENT
       };
     }
 
     if (oldFiber && !sameType) {
-      oldFiber.effect = DELETION;
+      oldFiber.effectTag = DELETION;
       wipFiber.effects = wipFiber.effects || [];
       wipFiber.effects.push(oldFiber);
     }
@@ -267,11 +267,11 @@ function commitWork(fiber) {
   }
   const domParent = domParentFiber.stateNode;
 
-  if (fiber.effect == PLACEMENT && fiber.tag == HOST_COMPONENT) {
+  if (fiber.effectTag == PLACEMENT && fiber.tag == HOST_COMPONENT) {
     domParent.appendChild(fiber.stateNode);
-  } else if (fiber.effect == UPDATE) {
+  } else if (fiber.effectTag == UPDATE) {
     updateDomProperties(fiber.stateNode, fiber.alternate.props, fiber.props);
-  } else if (fiber.effect == DELETION) {
+  } else if (fiber.effectTag == DELETION) {
     commitDeletion(fiber);
   }
 }
