@@ -257,46 +257,44 @@ function commitAllWork(fiber) {
 }
 
 function commitWork(fiber) {
-  if (fiber.tag != HOST_ROOT) {
-    let domParentFiber = fiber.parent;
-    while (domParentFiber.tag == CLASS_COMPONENT) {
-      domParentFiber = domParentFiber.parent;
+  if (fiber.tag == HOST_ROOT) {
+    return;
+  }
+
+  let domParentFiber = fiber.parent;
+  while (domParentFiber.tag == CLASS_COMPONENT) {
+    domParentFiber = domParentFiber.parent;
+  }
+  const domParent = domParentFiber.stateNode;
+
+  if (fiber.effect == PLACEMENT && fiber.tag == HOST_COMPONENT) {
+    domParent.appendChild(fiber.stateNode);
+  } else if (fiber.effect == UPDATE) {
+    updateDomProperties(fiber.stateNode, fiber.alternate.props, fiber.props);
+  } else if (fiber.effect == DELETION) {
+    commitDeletion(fiber);
+  }
+}
+
+function commitDeletion(fiber, domParent) {
+  let node = fiber;
+  while (true) {
+    if (node.tag == CLASS_COMPONENT) {
+      node = node.child;
+      continue;
     }
-    switch (fiber.effect) {
-      case PLACEMENT:
-        if (fiber.tag == HOST_COMPONENT) {
-          domParentFiber.stateNode.appendChild(fiber.stateNode);
-        }
-        break;
-      case UPDATE:
-        updateDomProperties(
-          fiber.stateNode,
-          fiber.alternate.props,
-          fiber.props
-        );
-        break;
-      case DELETION:
-        let node = fiber;
-        while (true) {
-          if (node.tag == CLASS_COMPONENT) {
-            node = node.child;
-            continue;
-          }
 
-          domParentFiber.stateNode.removeChild(node.stateNode);
+    domParent.removeChild(node.stateNode);
 
-          while (node != fiber && node.sibling == null) {
-            node = node.parent;
-          }
-
-          if (node == fiber) {
-            break;
-          }
-
-          node = node.sibling;
-        }
-        break;
+    while (node != fiber && !node.sibling) {
+      node = node.parent;
     }
+
+    if (node == fiber) {
+      return;
+    }
+
+    node = node.sibling;
   }
 }
 
