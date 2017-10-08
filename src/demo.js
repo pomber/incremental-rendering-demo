@@ -25,7 +25,7 @@ export function using(Reactish) {
     }
     tick() {
       setTimeout(() => {
-        this.setState(s => ({ elapsed: s.elapsed + 1 }));
+        this.setState({ elapsed: this.state.elapsed + 1 });
         this.tick();
       }, this.state.period);
     }

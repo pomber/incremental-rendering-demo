@@ -66,7 +66,7 @@ function resetNextUnitOfWork() {
 
   // Copy the setState parameter from the update payload to the corresponding fiber
   if (update.partialState) {
-    update.fiber.partialState = update.partialState;
+    update.instance.__fiber.partialState = update.partialState;
   }
 
   const root =
