@@ -1,3 +1,5 @@
+import { TEXT_ELEMENT } from "./element";
+
 const isEvent = name => name.startsWith("on");
 const isAttribute = name =>
   !isEvent(name) && name != "children" && name != "style";
@@ -53,4 +55,13 @@ export function updateDomProperties(dom, prevProps, nextProps) {
       const eventType = name.toLowerCase().substring(2);
       dom.addEventListener(eventType, nextProps[name]);
     });
+}
+
+export function createDomElement(fiber) {
+  const isTextElement = fiber.type === TEXT_ELEMENT;
+  const dom = isTextElement
+    ? document.createTextNode("")
+    : document.createElement(fiber.type);
+  updateDomProperties(dom, [], fiber.props);
+  return dom;
 }
