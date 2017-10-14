@@ -29,7 +29,6 @@ export function updateDomProperties(dom, prevProps, nextProps) {
     .filter(isAttribute)
     .filter(isNew(prevProps, nextProps))
     .forEach(name => {
-      // console.log("setting", name);
       dom[name] = nextProps[name];
     });
 
