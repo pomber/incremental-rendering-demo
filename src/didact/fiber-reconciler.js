@@ -47,7 +47,7 @@ function workLoop(deadline) {
   if (!nextUnitOfWork) {
     resetNextUnitOfWork();
   }
-  while (nextUnitOfWork && deadline.timeRemaining() > ENOUGH_TIME) {
+  while (nextUnitOfWork) {
     nextUnitOfWork = performUnitOfWork(nextUnitOfWork);
   }
   if (pendingCommit) {
@@ -192,7 +192,7 @@ function reconcileChildrenArray(wipFiber, newChildElements) {
 
     if (index == 0) {
       wipFiber.child = newFiber;
-    } else if (prevFiber) {
+    } else if (prevFiber && element) {
       prevFiber.sibling = newFiber;
     }
 
