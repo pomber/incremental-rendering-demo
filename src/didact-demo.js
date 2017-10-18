@@ -1,4 +1,4 @@
-import didact from "./didact/didact";
+import didact from "didact";
 import { using } from "./demo";
 import "./bleeding-thread";
 
@@ -14,9 +14,7 @@ didact.render(
   [
     <h3 key="1">
       This section is updated using{" "}
-      <a href="https://github.com/pomber/incremental-rendering-demo">
-        Didact Fiber
-      </a>
+      <a href="https://github.com/hexacta/didact">Didact Fiber</a>
     </h3>,
     <Demo key="2" />,
     <footer key="3">

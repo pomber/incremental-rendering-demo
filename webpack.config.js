@@ -52,7 +52,10 @@ module.exports = {
         use: {
           loader: "babel-loader",
           options: {
-            presets: ["env", "react"]
+            presets: [
+              ["env", { exclude: ["transform-es2015-classes"] }],
+              "react"
+            ]
           }
         }
       }
