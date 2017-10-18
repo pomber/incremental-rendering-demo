@@ -162,6 +162,7 @@ ul.solarsystem li.mercury {
 }
 
 ul.solarsystem li.venus {
+  animation-name: retrograde;
   animation-duration: 8s;
 }
 
@@ -193,6 +194,19 @@ ul.solarsystem li.jupiter {
   }
   to {
     transform: rotate(360deg);
+    color: black;
+    font-size: 50%;
+  }
+}
+
+@keyframes retrograde {
+  from {
+    transform: rotate(0deg);
+    color: white;
+    font-size: 200%;
+  }
+  to {
+    transform: rotate(-360deg);
     color: black;
     font-size: 50%;
   }
